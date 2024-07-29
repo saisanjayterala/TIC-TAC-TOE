@@ -84,11 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.textContent = currentPlayer;
 
             if (checkWin()) {
-                alert(`${currentPlayer} wins!`);
-                resetGame();
+                setTimeout(() => {
+                    alert(`${currentPlayer} wins!`);
+                    resetGame();
+                }, 100); // Wait for the final move to render
             } else if (board.every(cell => cell !== '')) {
-                alert('It\'s a draw!');
-                resetGame();
+                setTimeout(() => {
+                    alert('It\'s a draw!');
+                    resetGame();
+                }, 100); // Wait for the final move to render
             } else {
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
             }
