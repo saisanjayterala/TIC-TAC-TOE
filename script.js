@@ -2,16 +2,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginContainer = document.getElementById('login-container');
     const registerContainer = document.getElementById('register-container');
     const gameContainer = document.getElementById('game-container');
+    const leaderboardContainer = document.getElementById('leaderboard-container');
     const loginButton = document.getElementById('login-button');
     const registerButton = document.getElementById('register-button');
     const showLogin = document.getElementById('show-login');
     const showRegister = document.getElementById('show-register');
     const logoutButton = document.getElementById('logoutButton');
     const playerName = document.getElementById('player-name');
+    const leaderboard = document.getElementById('leaderboard');
     const cells = document.querySelectorAll('.cell');
     const resetButton = document.getElementById('resetButton');
     let currentPlayer = 'X';
     let board = ['', '', '', '', '', '', '', '', ''];
+    let currentUser;
 
     const winningCombinations = [
         [0, 1, 2],
@@ -49,9 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const storedPassword = localStorage.getItem(username);
         if (storedPassword && storedPassword === password) {
+            currentUser = username;
             playerName.textContent = username;
             loginContainer.classList.add('hidden');
             gameContainer.classList.remove('hidden');
+            leaderboardContainer.classList.remove('hidden');
+            updateLeaderboard();
         } else {
             alert('Invalid username or password');
         }
@@ -72,7 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function logout() {
         gameContainer.classList.add('hidden');
+        leaderboardContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
+        currentUser = null;
     }
 
     function handleCellClick(e) {
@@ -86,13 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (checkWin()) {
                 setTimeout(() => {
                     alert(`${currentPlayer} wins!`);
+                    updateScore(currentUser);
                     resetGame();
-                }, 100); // Wait for the final move to render
+                }, 100); 
             } else if (board.every(cell => cell !== '')) {
                 setTimeout(() => {
                     alert('It\'s a draw!');
                     resetGame();
-                }, 100); // Wait for the final move to render
+                }, 100); 
             } else {
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
             }
@@ -113,5 +122,23 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.textContent = '';
         });
         currentPlayer = 'X';
+    }
+
+    function updateScore(username) {
+        const score = localStorage.getItem(`${username}-score`);
+        localStorage.setItem(`${username}-score`, score ? parseInt(score) + 1 : 1);
+        updateLeaderboard();
+    }
+
+    function updateLeaderboard() {
+        const scores = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.endsWith('-score')) {
+                scores.push({ username: key.replace('-score', ''), score: localStorage.getItem(key) });
+            }
+        }
+        scores.sort((a, b) => b.score - a.score);
+        leaderboard.innerHTML = scores.map(entry => `<li>${entry.username}: ${entry.score}</li>`).join('');
     }
 });

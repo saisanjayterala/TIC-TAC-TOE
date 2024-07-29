@@ -16,7 +16,7 @@ h1 {
     text-shadow: 2px 2px #ff0000;
 }
 
-.auth-container {
+.auth-container, .leaderboard-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -88,4 +88,21 @@ button:hover {
 
 #resetButton:hover, #logoutButton:hover {
     background-color: #ffc700;
+}
+
+#leaderboard {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    width: 200px;
+}
+
+#leaderboard li {
+    padding: 10px;
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ff7ec6;
+    margin-bottom: 5px;
+    border-radius: 5px;
 }
