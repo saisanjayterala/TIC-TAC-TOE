@@ -50,14 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
 
-        const storedPassword = localStorage.getItem(username);
-        if (storedPassword && storedPassword === password) {
+        const storedUser = localStorage.getItem(username);
+        if (storedUser && storedUser === password) {
             currentUser = username;
-            playerName.textContent = username;
+            playerName.textContent = currentUser;
             loginContainer.classList.add('hidden');
             gameContainer.classList.remove('hidden');
             leaderboardContainer.classList.remove('hidden');
-            updateLeaderboard();
+            loadLeaderboard();
         } else {
             alert('Invalid username or password');
         }
@@ -68,42 +68,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('register-password').value;
 
         if (localStorage.getItem(username)) {
-            alert('Username already exists');
+            alert('User already exists');
         } else {
             localStorage.setItem(username, password);
-            alert('Registration successful');
-            showLogin.click();
+            alert('User registered successfully');
+            registerContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
         }
     }
 
     function logout() {
+        currentUser = null;
         gameContainer.classList.add('hidden');
         leaderboardContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
-        currentUser = null;
     }
 
-    function handleCellClick(e) {
-        const cell = e.target;
-        const index = cell.dataset.index;
+    function handleCellClick(event) {
+        const cell = event.target;
+        const index = cell.getAttribute('data-index');
 
-        if (board[index] === '') {
+        if (board[index] === '' && currentUser) {
             board[index] = currentPlayer;
             cell.textContent = currentPlayer;
 
             if (checkWin()) {
                 setTimeout(() => {
                     alert(`${currentPlayer} wins!`);
-                    updateScore(currentUser);
+                    updateLeaderboard(currentUser);
                     resetGame();
-                }, 100); 
+                }, 100);
             } else if (board.every(cell => cell !== '')) {
                 setTimeout(() => {
-                    alert('It\'s a draw!');
+                    alert('Draw!');
                     resetGame();
-                }, 100); 
+                }, 100);
             } else {
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                currentPlayer = currentPlayer === 'X' ? 'Y' : 'X';
             }
         }
     }
@@ -124,21 +125,20 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPlayer = 'X';
     }
 
-    function updateScore(username) {
-        const score = localStorage.getItem(`${username}-score`);
-        localStorage.setItem(`${username}-score`, score ? parseInt(score) + 1 : 1);
-        updateLeaderboard();
+    function updateLeaderboard(user) {
+        let scores = JSON.parse(localStorage.getItem('leaderboard')) || {};
+        scores[user] = scores[user] ? scores[user] + 1 : 1;
+        localStorage.setItem('leaderboard', JSON.stringify(scores));
+        loadLeaderboard();
     }
 
-    function updateLeaderboard() {
-        const scores = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.endsWith('-score')) {
-                scores.push({ username: key.replace('-score', ''), score: localStorage.getItem(key) });
-            }
-        }
-        scores.sort((a, b) => b.score - a.score);
-        leaderboard.innerHTML = scores.map(entry => `<li>${entry.username}: ${entry.score}</li>`).join('');
+    function loadLeaderboard() {
+        let scores = JSON.parse(localStorage.getItem('leaderboard')) || {};
+        leaderboard.innerHTML = '';
+        Object.keys(scores).forEach(user => {
+            let li = document.createElement('li');
+            li.textContent = `${user}: ${scores[user]}`;
+            leaderboard.appendChild(li);
+        });
     }
 });
